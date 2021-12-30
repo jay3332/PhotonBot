@@ -4,12 +4,11 @@ import discord
 import textwrap
 
 from io import BytesIO
-from PIL import Image, ImageDraw, ImageFont, ImageSequence
+from PIL import Image, ImageFont, ImageSequence
+from pilmoji import Pilmoji
 
 from bot.helpers.misc import proportionally_scale, to_thread
 from bot.helpers.transparency import save_transparent_gif
-
-from typing import Optional
 
 __all__ = 'IFunnyCaption',
 
@@ -120,17 +119,15 @@ class IFunnyCaption:
         height += padding * 2
 
         image = self.caption_image = Image.new('RGBA', (self.width, height), (255, 255, 255))
-        draw = ImageDraw.Draw(image)
 
-        for i, line in enumerate(lines):
-            offset = self.LINE_SPACING * i + self.font_size * i
+        with Pilmoji(image, emoji_position_offset=(0, 4)) as pilmoji:
+            for i, line in enumerate(lines):
+                offset = int(self.LINE_SPACING * i + self.font_size * i)
 
-            width, _ = self.font.getsize(line)
-            x_offset = int((self.width - width) / 2)
+                width, _ = pilmoji.getsize(line, self.font)
+                x_offset = int((self.width - width) / 2)
 
-            draw.text((x_offset, padding // 2 + offset), line, (0, 0, 0), self.font)
-
-        del draw
+                pilmoji.text((x_offset, padding // 2 + offset), line, (0, 0, 0), self.font)
 
     def _render_frame(self, frame: Image.Image, /) -> None:
         actual = Image.new("RGBA", self.final_size)

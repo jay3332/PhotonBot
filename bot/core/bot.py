@@ -20,7 +20,7 @@ Flags.NO_UNDERSCORE = True
 Flags.NO_DM_TRACEBACK = True
 Flags.HIDE = True
 
-INTENTS = discord.Intents.all()  # For now
+INTENTS = discord.Intents.default()  # For now
 
 ALLOWED_MENTIONS = discord.AllowedMentions(
     users=True,
