@@ -8,6 +8,7 @@ from pilmoji import Pilmoji
 
 from bot.helpers import wrap_text
 from bot.helpers.misc import proportionally_scale, to_thread
+from bot.helpers.pil import FallbackFont
 from bot.helpers.transparency import save_transparent_gif
 
 __all__ = 'IFunnyCaption',
@@ -24,13 +25,14 @@ class IFunnyCaption:
     MAX_WIDTH = 600
     LINE_SPACING = 2.5
 
+    # noinspection PyTypeChecker
     def __init__(self, image_bytes: bytes, *, text: str) -> None:
         self._image_bytes: bytes = image_bytes
         self._rescale: tuple[int, int] = None
         self._fallback_duration: int = None
 
         self.text: str = text[:self.MAX_CHARS]
-        self.font: ImageFont.FreeTypeFont = None
+        self.font: FallbackFont = None
         self.image: Image.Image = None
 
         self.caption_image: Image.Image = None
@@ -78,11 +80,16 @@ class IFunnyCaption:
 
     @to_thread
     def _open_font(self) -> None:
-        self.font = ImageFont.truetype(
-            './bot/assets/fonts/futura.ttf',
-            size=self.width // (
-                9 if self.width < 400 else 12
-            )
+        base_size = self.width // (9 if self.width < 400 else 12)
+
+        self.font = FallbackFont(
+            ImageFont.truetype(
+                './bot/assets/fonts/futura.ttf', size=base_size,
+            ),
+            lambda: ImageFont.truetype(
+                './bot/assets/fonts/unifont.ttf', size=round(base_size * (7 / 9)),
+            ),
+            fallback_offset=(0, round(base_size * (5 / 18))),
         )
 
     @to_thread
@@ -96,7 +103,7 @@ class IFunnyCaption:
         self.frames = []
 
     def _split_text(self) -> list[str]:
-        return wrap_text(self.text, self.font, self.width)
+        return wrap_text(self.text, self.font, self.width)  # type: ignore
 
     def _render_caption(self) -> None:
         lines = self._split_text()
@@ -111,13 +118,14 @@ class IFunnyCaption:
         image = self.caption_image = Image.new('RGBA', (self.width, height), (255, 255, 255))
 
         with Pilmoji(image, emoji_position_offset=(0, 4)) as pilmoji:
-            for i, line in enumerate(lines):
-                offset = int(self.LINE_SPACING * i + self.font_size * i)
+            with self.font.session(pilmoji.draw):
+                for i, line in enumerate(lines):
+                    offset = int(self.LINE_SPACING * i + self.font_size * i)
 
-                width, _ = pilmoji.getsize(line, self.font)
-                x_offset = int((self.width - width) / 2)
+                    width, _ = pilmoji.getsize(line, self.font)  # type: ignore
+                    x_offset = int((self.width - width) / 2)
 
-                pilmoji.text((x_offset, padding // 2 + offset), line, (0, 0, 0), self.font)
+                    pilmoji.text((x_offset, padding // 2 + offset), line, (0, 0, 0), self.font)  # type: ignore
 
     def _render_frame(self, frame: Image.Image, /) -> None:
         actual = Image.new("RGBA", self.final_size)
