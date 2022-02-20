@@ -117,7 +117,7 @@ class IFunnyCaption:
 
         image = self.caption_image = Image.new('RGBA', (self.width, height), (255, 255, 255))
 
-        with Pilmoji(image, emoji_position_offset=(0, 4)) as pilmoji:
+        with Pilmoji(image, emoji_position_offset=(0, round((7 / 36) * self.font.size))) as pilmoji:
             with self.font.session(pilmoji.draw):
                 for i, line in enumerate(lines):
                     offset = int(self.LINE_SPACING * i + self.font_size * i)
