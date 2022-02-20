@@ -1,16 +1,14 @@
 from __future__ import annotations
 
+import functools
+import re
+from typing import Optional, TYPE_CHECKING, Union
+
 import aiohttp
 import discord
-import functools
 import humanize
-import re
-
 from discord.asset import AssetMixin
 from discord.ext import commands
-
-from bs4 import BeautifulSoup
-from typing import Optional, Union, TYPE_CHECKING
 
 from .misc import url_from_emoji
 

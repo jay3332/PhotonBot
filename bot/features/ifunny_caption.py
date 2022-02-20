@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import discord
-import textwrap
 
 from io import BytesIO
 from PIL import Image, ImageFont, ImageSequence
 from pilmoji import Pilmoji
 
+from bot.helpers import wrap_text
 from bot.helpers.misc import proportionally_scale, to_thread
 from bot.helpers.transparency import save_transparent_gif
 
@@ -96,17 +96,7 @@ class IFunnyCaption:
         self.frames = []
 
     def _split_text(self) -> list[str]:
-        split = textwrap.wrap(
-            self.text,
-            max(1, 2 * int(self.width / self.font_size)),
-            replace_whitespace=False
-        )
-
-        final = []
-        for chunk in split:
-            final += chunk.split('\n')
-
-        return final
+        return wrap_text(self.text, self.font, self.width)
 
     def _render_caption(self) -> None:
         lines = self._split_text()

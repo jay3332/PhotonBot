@@ -52,7 +52,8 @@ def proportionally_scale(
     return width, height
 
 
-def url_from_emoji(emoji: str, /) -> None:
+def url_from_emoji(emoji: str, /) -> str:
+    """Converts an emoji into a URL."""
     if match := EMOJI_REGEX.match(emoji):
         animated, _, id = match.groups()
         extension = 'gif' if animated else 'png'
