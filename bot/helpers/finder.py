@@ -69,7 +69,6 @@ class ImageFinder:
 
     CONVERTERS = (
         commands.MemberConverter,
-        commands.EmojiConverter,
         commands.PartialEmojiConverter
     )
 
